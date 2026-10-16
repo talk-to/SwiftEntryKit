@@ -83,6 +83,10 @@ final class EKWindowProvider: EntryPresenterDelegate {
             mainRollbackWindow = UIApplication.shared.keyWindow
         } else {
             entryVC = rootVC!
+            // A window created while no scene was available is never shown, so attach it now
+            if #available(iOS 13.0, *), entryWindow.windowScene == nil {
+                entryWindow.windowScene = EKWindow.preferredWindowScene
+            }
         }
         return entryVC
     }

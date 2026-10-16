@@ -13,19 +13,27 @@ class EKWindow: UIWindow {
     var isAbleToReceiveTouches = false
     
     init(with rootVC: UIViewController) {
-        if #available(iOS 13.0, *) {
-            // TODO: Patched to support SwiftUI out of the box but should require attendance
-            if let scene = UIApplication.shared.connectedScenes.filter({$0.activationState == .foregroundActive}).first as? UIWindowScene {
-                super.init(windowScene: scene)
-            } else {
-                super.init(frame: UIScreen.main.bounds)
-            }
+        if #available(iOS 13.0, *), let scene = EKWindow.preferredWindowScene {
+            super.init(windowScene: scene)
         } else {
             super.init(frame: UIScreen.main.bounds)
         }
         backgroundColor = .clear
         rootViewController = rootVC
         accessibilityViewIsModal = true
+    }
+    
+    /**
+     The scene the entry window should be attached to.
+     Under the UIScene lifecycle a window with no scene is never shown, so an inactive scene
+     (e.g. while Control Center is pulled down) is preferred over none at all.
+     */
+    @available(iOS 13.0, *)
+    static var preferredWindowScene: UIWindowScene? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first { $0.activationState == .foregroundActive }
+            ?? scenes.first { $0.activationState == .foregroundInactive }
+            ?? scenes.first
     }
     
     required init?(coder aDecoder: NSCoder) {
